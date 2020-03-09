@@ -1,0 +1,469 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>Big Data Visualization</title>
+     
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    
+        <style type="text/css">
+
+          html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #F7F7F7;
+          }
+
+          /*   First Page  */
+          svg {
+            width: 960px;
+            height: 500px;
+            background: none;
+            margin-left: -200px;
+            margin-top:-100px;
+          }
+          svg:active {
+            cursor: move;
+            cursor: -moz-grabbing;
+            cursor: -webkit-grabbing;
+          }
+          #map {
+              width: 960px;
+              height: 480px;
+          }
+          .stroke {
+            fill: none;
+            stroke: #888;
+            stroke-width: 2px;
+          }
+          
+          .fill {
+            fill: #fff;
+          }
+          
+          .land {
+            fill: #222;
+          }
+          
+          .boundary {
+            fill: none;
+            stroke: #fff;
+            stroke-width: .5px;
+          }
+          .country {
+              fill: steelblue;
+              stroke: white;
+          }
+
+          #clicked{
+            fill: steelblue;
+            stroke-width:3px;
+            stroke:black;
+          }
+          
+          #clock {
+            font-size: 1.5em;
+            font-weight: bold;
+          }
+
+          .info{
+            position: absolute;
+            padding:10px;
+            left: 60%;
+            top:20%;
+          }
+
+          #tooltip-container {
+            position: absolute;
+            color: #000;
+            padding: 10px;
+            left: 60%;
+            top:30%;
+            display: none;
+          }
+
+          .tooltip_key {
+            font-weight: bold;
+            margin:5px;
+          }
+
+          .tooltip_value {
+            margin-left: 20px;
+            float: right;
+          }
+
+          #year{
+            color: #ea5f76;
+          }
+
+          #price{
+            color: #ea5f76;
+          }
+
+
+           /*   Second Page  */
+
+
+          #header {
+            width: 970px;
+            height: 25px;
+            font-size: 12px;
+            font-family: Arial;
+            border-bottom: solid 5px #F7F7F7;
+            padding-top: 5px;
+
+          }
+
+          #legend {
+            float: left;
+            font-size: 20px;
+            font-family: Georgia;
+          }
+
+          #daterange {
+            float: right;
+            display: none;
+            padding-left: 10px;
+          }
+
+          #placetype {
+            float: right;
+            display: none;
+            padding-left: 10px;
+          }
+
+          #chart {
+            width: 980px;
+            padding-top: 20px;
+          }
+
+          .cell {
+            color: white;
+            border: solid 1px white;
+            overflow: hidden;
+            position: absolute;
+          }
+
+          .selection {
+            z-index: 100;
+          }
+
+          .label {
+            font-family: sans-serif;
+            font-weight: bold;
+            margin: 5px;
+          }
+
+          .label .cost {
+            font-family: Georgia;
+            font-size: 1.5em;
+            font-weight: normal;
+            padding-bottom: 3px;
+            display: block;
+            width: 100%;
+          }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <ul id="myTab" class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#tool-list" id="tool-list-tab" role="tab" data-toggle="tab" aria-controls="tool-list" aria-expanded="true">Animated Map</a></li>
+            <li role="presentation" class=""><a href="#profile" role="tab" id="profile-tab" data-toggle="tab" aria-controls="profile" aria-expanded="true">Treemap</a></li>
+            </ul>
+
+
+            <div id="myTabContent" class="tab-content">
+              <div role="tabpanel" class="tab-pane active in" id="tool-list" aria-labelledby="tool-list-tab">
+              
+                <div style = "display:inline-block;"><h3>Singapore property prices animation map in</h3><div id="clock"></div></div>
+                
+                <div id="map"></div>
+                <img class="info" src="info.png">
+                <div id="tooltip-container"></div>
+                
+                <button class="btn btn-default" id="play">Play</button>               
+              </div>
+
+
+
+                <div role="tabpanel" class="tab-pane fade" id="profile" aria-labelledby="profile-tab">
+                    <div>
+                      <div style = "display:inline-block;"><h3>Visualization of famous places in Singapore</h3></div>
+                    </div>
+                    <div id="header">
+                        <div id="legend">
+                            Error in loading data ......
+                        </div>
+                        <div id="daterange">
+                            <label for="range">
+                                in period:
+                            </label>
+                            <select name="id" id="range">
+                            </select>
+                        </div>
+                        <div id="placetype">
+                            <label for="type">
+                                place type:
+                            </label>
+                            <select name="id" id="type">
+                            </select>
+                        </div>
+                    </div>
+                    <div id="chart" style="padding-top:20px;"></div>
+                  
+                    <br><br>
+                </div>
+            </div><!-- end of tab-content -->
+        </div><!-- END OF CONTAINER -->
+    </body>
+        
+        <script type="text/javascript" src="js/jquery-1.7.js"></script>
+        <script type="text/javascript" src="js/underscore.js" ></script>
+        <script type="text/javascript" src="js/backbone.js" ></script>
+        <script type="text/javascript" src="js/miso.ds.deps.js"></script>
+        <script type="text/javascript" src="js/d3.v2.min.js"></script>
+        <script src="js/main.js"></script>
+       
+     
+        <script type="text/template" id="placeTypes">
+          <% _.each(placeTypes, function(type) { %>
+            <option value="<%= type %>"><%= type %></option>
+          <% }); %>
+        </script>
+
+        <script type="text/template" id="dateRanges">
+          <% _.each(dateRanges, function(range) { %>
+            <option value="<%= range %>"><%= range %></option>
+          <% }); %>
+        </script>
+
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+    
+        <!--   For First page Javascript -->
+        <script src="http://d3js.org/queue.v1.min.js"></script>
+        <script>
+            //globals
+          var width, height, projection, path, svg, attributeArray = [], currentAttribute = 0, playing = false,districtArray = [];
+
+          function init() {
+            setMap();
+            animateMap();
+          }
+
+          function setMap() {
+
+            width = 960, height = 580;  // map width and height, matches 
+
+            projection =d3.geo.mercator()
+                          .scale(70000)
+                          .center([103.75,1.4]);
+
+            path = d3.geo.path()  // create path generator function
+                .projection(projection);  // add our define projection to it
+
+
+            svg = d3.select("#map").append("svg")   // append a svg to our html div to hold our map
+                .attr("width", width)
+                .attr("height", height);
+
+
+           
+
+            loadData();  // let's load our data next
+
+          }
+
+          function loadData() {
+
+            queue()   // queue function loads all external data files asynchronously 
+              .defer(d3.json, "data/districtsgWithIsoName.geojson")  // our geometries
+              .defer(d3.csv, "data/damageInDistrict.csv")  // and associated data in csv file
+              .await(processData);   // once all files are loaded, call the processData function passing
+                                     // the loaded objects as arguments
+          }
+
+          function processData(error,singapore,districtData) {
+            // function accepts any errors from the queue function as first argument, then
+            // each data object in the order of chained defer() methods above
+
+            var districts = singapore.features;  // get all the data of singapore from districtsg geojson file
+            
+            for (var i in districts) {    // for each geometry object
+              for (var j in districtData) {  // for each row in the CSV
+                if(districts[i].properties.iso == districtData[j].id) {   // if district name from two files are matched
+                  // console.log(districtData[i]);  65 objects of districtData
+                  // console.log(districtData[j]); 65 objecs of districtData in random
+                  for(var k in districtData[i]) {   // for each column in the a row within the CSV
+                    // console.log(k);  //455 data of each individual column table; like 2008,2009,2010,2011,2012,2013 are kept repeating 65 times
+
+                    if(k != 'name' && k != 'id') {  // let's not add the name or id as props since we already have them
+                      if(attributeArray.indexOf(k) == -1) { 
+                         attributeArray.push(k);  // add new column headings to our array for later
+                      }
+                      // console.log(k);   year name
+                      // console.log(districtData[j][k]); geometry object
+
+                      districts[i].properties[k] = Number(districtData[j][k])  // add each CSV column key/value to geometry object
+                      // console.log(districts[i].properties[k]); k = 2008 and districts[i].properties[k] = current geo of some random records.
+                      // console.log(districts[i].properties.isotitle);
+                    } 
+                  }
+                  break;  // stop looking through the CSV since we made our match
+                }
+              }
+            }
+
+            d3.select('#clock').html(attributeArray[currentAttribute]);  // populate the clock initially with the current year
+            drawMap(singapore);  // let's mug the map now with our newly populated data object
+          }
+
+          function drawMap(singapore) {
+
+              svg.selectAll(".country")   // select country objects (which don't exist yet)
+                .data(singapore.features)  // bind data to these non-existent objects
+                .enter().append("path") // prepare data to be appended to paths
+                .attr("class", "country") // give them a class for styling and access later
+                .attr("id", function(d) { return "code_" + d.properties.id; }, true)  // give each a unique id for access later
+                .attr("d", path); // create them using the svg path generator defined above
+
+              var dataRange = getDataRange(); // get the min/max values from the current year's range of data values
+              d3.selectAll('.country')  // select all the districts
+              .attr('fill-opacity', function(d) {
+                  // console.log(d.properties.iso);
+                  // console.log(dataRange);
+                  // console.log(d.properties);
+                  return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // give them an opacity value based on their current value
+              })
+              .on("click",function(d){
+                var clickedEl = document.getElementById('clicked');
+                if(clickedEl != null){
+                    clickedEl.setAttribute('id','');
+                }
+                $(this).attr("id","clicked");
+                 var html = "";
+                  html += "<div class=\"tooltip_kv\">";
+                  html += "<span class=\"tooltip_key\">";
+                  html += "Year "
+                  html += "</span>";
+                  html += "<span id=\"year\" class=\"tooltip_value\">";
+                  html +=  attributeArray[currentAttribute];
+                  html += "</span><br/>";
+                  html += "<span class=\"tooltip_key\">";
+                  html += "District Name ";
+                  html += "</span>";
+                  html += "<span id=\"location\" class=\"tooltip_value\">";
+                  html +=  d.properties.isotitle;
+                  html += "</span><br/>";
+                  html += "<span class=\"tooltip_key\">";
+                  html += "Average LandPrice ";
+                  html += "</span>";
+                  html += "<span id=\"price\" class=\"tooltip_value\">";
+                  html += d.properties[attributeArray[currentAttribute]];
+                  html += "</span>";
+                  html += "</div>";
+                  
+                  $("#tooltip-container").html(html);
+                  $("#tooltip-container").show();
+                  
+                
+              });
+
+            
+          }
+
+
+          function sequenceMap() {
+            
+              var dataRange = getDataRange(); // get the min/max values from the current year's range of data values
+              var currentPrice;
+              d3.selectAll('.country').transition()  //select all the districts and prepare for a transition to new values
+                .duration(750)  // give it a smooth time period for the transition
+                .attr('fill-opacity', function(d) {
+                  currentPrice = d.properties[attributeArray[currentAttribute]];
+                  return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // the end color value
+                })
+
+              var yearEl = document.getElementById('year');
+              if(yearEl!=null)
+                yearEl.innerHTML = attributeArray[currentAttribute];
+              
+              var priceEl = document.getElementById('price') ;
+              if(priceEl != null)
+                priceEl.innerHTML = currentPrice;
+              
+
+          }
+
+          function getColor(valueIn, valuesIn) {
+
+            var color = d3.scale.linear() // create a linear scale
+              .domain([valuesIn[0],valuesIn[1]])  // input uses min and max values
+              .range([.3,1]);   // output for opacity between .3 and 1 %
+
+            console.log(valueIn);
+
+            return color(valueIn);  // return that number to the caller
+          }
+
+          function getDataRange() {
+            // function loops through all the data values from the current data attribute
+            // and returns the min and max values
+
+            var min = Infinity, max = -Infinity;  
+            d3.selectAll('.country')
+              .each(function(d,i) {
+                var currentValue = d.properties[attributeArray[currentAttribute]];
+                if(currentValue <= min && currentValue != -99 && currentValue != 'undefined') {
+                  min = currentValue;
+                }
+                if(currentValue >= max && currentValue != -99 && currentValue != 'undefined') {
+                  max = currentValue;
+                }
+            });
+            return [min,max];  //boomsauce
+          }
+
+          function animateMap() {
+
+            var timer;  // create timer object
+            d3.select('#play')  
+              .on('click', function() {  // when user clicks the play button
+                if(playing == false) {  // if the map is currently playing
+                  timer = setInterval(function(){   // set a JS interval
+                    if(currentAttribute < attributeArray.length-1) {  
+                        currentAttribute +=1;  // increment the current attribute counter
+                    } else {
+                        currentAttribute = 0;  // or reset it to zero
+                    }
+                    sequenceMap();  // update the representation of the map 
+                    d3.select('#clock').html(attributeArray[currentAttribute]);  // update the clock
+                  }, 2000);
+                
+                  d3.select(this).html('stop');  // change the button label to stop
+                  playing = true;   // change the status of the animation
+                } else {    // else if is currently playing
+                  clearInterval(timer);   // stop the animation by clearing the interval
+                  d3.select(this).html('play');   // change the button label to play
+                  playing = false;   // change the status again
+                }
+            });
+          }
+
+
+          window.onload = init();  // magic starts here
+            
+          </script>
+     
+    </body>
+</html>

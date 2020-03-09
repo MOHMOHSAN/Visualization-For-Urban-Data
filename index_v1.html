@@ -1,0 +1,389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>Big Data Visualization</title>
+     
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    
+        <style type="text/css">
+
+          html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #F7F7F7;
+          }
+
+
+
+          #header {
+            width: 970px;
+            height: 25px;
+            font-size: 12px;
+            font-family: Arial;
+            border-bottom: solid 5px #F7F7F7;
+            padding-top: 5px;
+
+          }
+
+          #legend {
+            float: left;
+            font-size: 20px;
+            font-family: Georgia;
+          }
+
+          #daterange {
+            float: right;
+            display: none;
+            padding-left: 10px;
+          }
+
+          #placetype {
+            float: right;
+            display: none;
+            padding-left: 10px;
+          }
+
+          #chart {
+            width: 980px;
+            padding-top: 20px;
+          }
+
+          .cell {
+            color: white;
+            border: solid 1px white;
+            overflow: hidden;
+            position: absolute;
+          }
+
+          .selection {
+            z-index: 100;
+          }
+
+          .label {
+            font-family: sans-serif;
+            font-weight: bold;
+            margin: 5px;
+          }
+
+          .label .cost {
+            font-family: Georgia;
+            font-size: 1.5em;
+            font-weight: normal;
+            padding-bottom: 3px;
+            display: block;
+            width: 100%;
+          }
+
+           svg {
+              width: 960px;
+              height: 500px;
+              background: none;
+            }
+            svg:active {
+              cursor: move;
+              cursor: -moz-grabbing;
+              cursor: -webkit-grabbing;
+            }
+            #first_layer path {
+              stroke: #000;
+              stroke-linecap: round;
+              stroke-linejoin: round;
+            }
+            #clock {
+              position: absolute;
+              z-index: 1000;
+              width: 100px; height: 30px;
+              font-size: 24;
+              color: black;
+              top: 20px;
+              right: 10px;
+            }
+
+            #tooltip-container {
+              position: absolute;
+              background-color: #fff;
+              color: #000;
+              padding: 10px;
+              border: 1px solid;
+              display: none;
+            }
+
+            .tooltip_key {
+              font-weight: bold;
+            }
+
+            .tooltip_value {
+              margin-left: 20px;
+              float: right;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <ul id="myTab" class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#tool-list" id="tool-list-tab" role="tab" data-toggle="tab" aria-controls="tool-list" aria-expanded="true">Animated Map</a></li>
+            <li role="presentation" class=""><a href="#profile" role="tab" id="profile-tab" data-toggle="tab" aria-controls="profile" aria-expanded="true">Treemap</a></li>
+            </ul>
+
+
+            <div id="myTabContent" class="tab-content">
+              <div role="tabpanel" class="tab-pane active in" id="tool-list" aria-labelledby="tool-list-tab">
+                <div>
+                  <div style = "display:inline-block;"><h3>Locations of road accidents in Singapore</h3></div>
+                </div>
+
+                <div id="tooltip-container"></div>
+                <div id="animatedChart"></div>
+                <div id="clock"></div>
+                <button onclick="startAnimation()">Start</button>
+                <button onclick="stopAnimation()">Stop</button>
+              </div>
+
+
+
+                <div role="tabpanel" class="tab-pane fade" id="profile" aria-labelledby="profile-tab">
+                    <div>
+                      <div style = "display:inline-block;"><h3>Visualization of famous places in Singapore</h3></div>
+                    </div>
+                    <div id="header">
+                        <div id="legend">
+                            Error in loading data ......
+                        </div>
+                        <div id="daterange">
+                            <label for="range">
+                                in period:
+                            </label>
+                            <select name="id" id="range">
+                            </select>
+                        </div>
+                        <div id="placetype">
+                            <label for="type">
+                                place type:
+                            </label>
+                            <select name="id" id="type">
+                            </select>
+                        </div>
+                    </div>
+                    <div id="chart" style="padding-top:20px;"></div>
+                  
+                    <br><br>
+                </div>
+            </div><!-- end of tab-content -->
+        </div><!-- END OF CONTAINER -->
+    </body>
+        
+        <script type="text/javascript" src="js/jquery-1.7.js"></script>
+        <script type="text/javascript" src="js/underscore.js" ></script>
+        <script type="text/javascript" src="js/backbone.js" ></script>
+        <script type="text/javascript" src="js/miso.ds.deps.js"></script>
+        <script type="text/javascript" src="js/d3.v2.min.js"></script>
+        <script src="js/main.js"></script>
+       
+     
+         <script type="text/template" id="placeTypes">
+          <% _.each(placeTypes, function(type) { %>
+            <option value="<%= type %>"><%= type %></option>
+          <% }); %>
+        </script>
+
+        <script type="text/template" id="dateRanges">
+          <% _.each(dateRanges, function(range) { %>
+            <option value="<%= range %>"><%= range %></option>
+          <% }); %>
+        </script>
+
+          <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript">
+      var alldata;
+
+      var endd = '2013-03-13';
+      var endDate = new Date(endd);
+
+      var curdate = '';
+        $('#clock').text('01/01/1950')
+
+      var svg = d3.select("#animatedChart")
+                  .append("svg")
+                  // .call(d3.behavior.zoom()
+                  //     .on("zoom", redraw))
+                  // .append("g");
+
+      var g;
+
+      var coordinateData =[];
+
+
+      // Our projection.
+      var xy = d3.geo.mercator()
+                .scale(90000)
+                .center([103.75,1.4]);//[103.75,1.4]
+
+      var vals = {};
+
+      var path = d3.geo.path()
+                  .projection(xy)
+
+      var colors = ["#FFFFFF", "#FEF0D9", "#fDCC8A", "#FC8D59", "#E34A33","#B30000"];
+
+      var fill = d3.scale.linear()
+          .domain([0, 1, 4, 16, 64, 256])
+          .range(colors);
+
+
+      svg.append("g").attr("id", "first_layer");
+
+      d3.json("data/districtsgWithIsoName.geojson", function(geojson) {
+        coordinateData.push(geojson);
+        var idx = {};
+        
+        for (var i = 0; i<geojson.features.length; ++i){
+          idx[geojson.features[i].properties.iso] = i;
+          vals[geojson.features[i].properties.iso] = 0;
+        }
+
+
+        // part where to draw us map
+        var chart = svg.select("#first_layer")
+          
+        g = chart.selectAll("path")
+            .data(geojson.features)
+          .enter().append("path")
+          .attr("class", function(d){ return d.iso })
+          .attr("fill", function(d){ return fill(vals[d.properties.iso])})
+          .attr("stroke-width", "0.5px")
+          .attr("fill-opacity", "0.7")
+          .attr("d", path.projection(xy))
+          .on("mousemove", function(d) {
+
+              var html = "";
+              html += "<div class=\"tooltip_kv\">";
+              html += "<span class=\"tooltip_key\">";
+              html += d.properties.isotitle;
+              html += "</span>";
+              html += "<span class=\"tooltip_value\">";
+              html += ": " + "0";
+              html += "</span>";
+              html += "</div>";
+              
+              $("#tooltip-container").html(html);
+              $(this).attr("fill","#fDCC8A");
+              $("#tooltip-container").show();
+              
+              var coordinates = d3.mouse(this);
+              
+              var map_width = 960;
+              
+              if (d3.event.layerX < map_width / 2) {
+                d3.select("#tooltip-container")
+                  .style("top", (d3.event.layerY + 15) + "px")
+                  .style("left", (d3.event.layerX + 15) + "px");
+              } else {
+                var tooltip_width = $("#tooltip-container").width();
+                d3.select("#tooltip-container")
+                  .style("top", (d3.event.layerY + 15) + "px")
+                  .style("left", (d3.event.layerX - tooltip_width - 30) + "px");
+              }
+          })
+          .on("mouseout", function() {
+            $(this).attr("fill","white");
+              $("#tooltip-container").hide();
+          });
+    
+
+       
+
+
+      });
+
+
+
+      var damage;
+      var render = function(){
+      // console.log('rend')
+      g
+        .data(coordinateData[0].features)
+          .transition().duration(2)
+          .attr("fill", function(d){ 
+            // console.log(fill(vals[d.properties.iso])); 
+            return fill(Math.floor(vals[d.properties.iso]))})
+      }
+      var iterateDays = function(){
+
+        var d = ('0' + curdate.getDate()).slice(-2)+'/'+('0' + (curdate.getMonth()+1)).slice(-2)+'/'+curdate.getFullYear();
+    
+        for (i in vals){
+          if (vals[i]>=0) vals[i] = vals[i] * 0.98;
+        }
+        if (d in damage){
+          for (s in damage[d]){
+            var val = damage[d][s]
+            vals[s] += val;
+            
+
+          }
+          // console.log("Accident Occur");
+          // console.log(d);
+          // console.log(damage[d]);
+          $('#clock').text(d);
+        }
+        curdate.setDate( curdate.getDate() + 1 );
+        render();
+       
+
+        if (curdate <= endDate) {
+
+           setTimeout(iterateDays, 4);
+      
+        }else{
+
+          curdate = new Date('2012-01-09');
+          console.log('ss');
+           clearTimeout(curdate);
+           console.log(curdate);
+        }
+        
+      }
+
+
+      function startAnimation(){
+          curdate = new Date('2012-01-09');
+          console.log(curdate);
+          
+          d3.json("data/subDamage_v2.json", function(json) {
+            var data = json.rows; // data is 20 object from json file
+            // console.log(data);
+
+            damage = {};
+            for(var i = 0; i<data.length; ++i){
+             
+              if(!(data[i].date in damage)){
+                damage[data[i].date] = {};
+              }  
+
+
+              if(!(data[i].state in damage[data[i].date])) damage[data[i].date][data[i].state] = data[i].damage + 1;
+            }
+            iterateDays();
+          })
+      }
+
+
+      function stopAnimation(){
+          curdate = endDate;
+      }
+    </script>
+     
+    </body>
+</html>
